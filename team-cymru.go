@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -92,7 +93,8 @@ func parseLookupHashOutput(lookupout []string) ResultsData {
 
 		if len(fields) > 0 {
 			lookup.Detection = fields[0]
-			lookup.LastSeen = fields[1]
+			s, _ := strconv.ParseInt(fields[1], 10, 64)
+			lookup.LastSeen = string(time.Unix(s, 0).Format("20060102"))
 		} else {
 			log.Fatal(fmt.Errorf("Unable to parse LookupHashOutput: %#v\n", lookupout))
 		}
