@@ -2,10 +2,10 @@
 # malice-team-cymru
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
-[![Docker Stars](https://img.shields.io/docker/stars/malice/teamcymru.svg)][hub]
-[![Docker Pulls](https://img.shields.io/docker/pulls/malice/teamcymru.svg)][hub]
-[![Image Size](https://img.shields.io/imagelayers/image-size/malice/teamcymru/latest.svg)](https://imagelayers.io/?images=malice/teamcymru:latest)
-[![Image Layers](https://img.shields.io/imagelayers/layers/malice/teamcymru/latest.svg)](https://imagelayers.io/?images=malice/teamcymru:latest)
+[![Docker Stars](https://img.shields.io/docker/stars/malice/team-cymru.svg)][hub]
+[![Docker Pulls](https://img.shields.io/docker/pulls/malice/team-cymru.svg)][hub]
+[![Image Size](https://img.shields.io/imagelayers/image-size/malice/team-cymru/latest.svg)](https://imagelayers.io/?images=malice/team-cymru:latest)
+[![Image Layers](https://img.shields.io/imagelayers/layers/malice/team-cymru/latest.svg)](https://imagelayers.io/?images=malice/team-cymru:latest)
 
 Malice TeamCymru - Malware Hash Registry Plugin
 
@@ -64,7 +64,7 @@ This will output to stdout and POST to malice results API webhook endpoint.
 ```
 ### Sample Output STDOUT (Markdown Table):
 ---
-#### teamcymru
+#### TeamCymru
 | Detection   | LastSeen |
 | ----------- | -------- |
 | 85%         | 20091112 |
