@@ -56,16 +56,18 @@ This will output to stdout and POST to malice results API webhook endpoint.
 ```json
 {
   "team-cymru": {
-
+    "found": false,
+    "lastseen": "",
+    "detection": ""
   }
 }
 ```
 ### Sample Output STDOUT (Markdown Table):
 ---
 #### teamcymru
-| Ratio   | Scanned                |
-| ------- | ---------------------- |
-| 85%     | Sun 2016Feb14 14:00:50 |
+| Detection   | LastSeen |
+| ----------- | -------- |
+| 85%         | 20091112 |
 ---
 ### To Run on OSX
  - Install [Homebrew](http://brew.sh)
