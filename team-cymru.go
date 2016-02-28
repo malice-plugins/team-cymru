@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"os"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/codegangsta/cli"
@@ -19,59 +22,20 @@ var Version string
 // BuildTime stores the plugin's build time
 var BuildTime string
 
-// virustotal json object
-type virustotal struct {
-	Results ResultsData `json:"virustotal"`
+// TeamCymru json object
+type TeamCymru struct {
+	Results ResultsData `json:"team-cymru"`
 }
 
 // ResultsData json object
 type ResultsData struct {
-	Scans        map[string]Scan `json:"scans"`
-	Permalink    string          `json:"permalink"`
-	Resource     string          `json:"resource"`
-	ResponseCode int             `json:"response_code"`
-	Total        int             `json:"total"`
-	Positives    int             `json:"positives"`
-	ScanID       string          `json:"scan_id"`
-	ScanDate     string          `json:"scan_date"`
-	VerboseMsg   string          `json:"verbose_msg"`
-	MD5          string          `json:"md5"`
-	Sha1         string          `json:"sha1"`
-	Sha256       string          `json:"sha256"`
+	Found     bool   `json:"found"`
+	LastSeen  string `json:"lastseen"`  // last known GMT timestamp associated with that hash in unix epoch
+	Detection string `json:"detection"` // detection percentage across a mix of AV packages
 }
 
-// Scan is a VirusTotal AV scan JSON object
-type Scan struct {
-	Detected bool   `json:"detected"`
-	Version  string `json:"version"`
-	Result   string `json:"result"`
-	Update   string `json:"update"`
-}
-
-// ScanResults json object
-type ScanResults struct {
-	Permalink    string `json:"permalink"`
-	Resource     string `json:"resource"`
-	ResponseCode int    `json:"response_code"`
-	ScanID       string `json:"scan_id"`
-	VerboseMsg   string `json:"verbose_msg"`
-	MD5          string `json:"md5"`
-	Sha1         string `json:"sha1"`
-	Sha256       string `json:"sha256"`
-}
-
-type bitly struct {
-	StatusCode int       `json:"status_code"`
-	StatusTxt  string    `json:"status_txt"`
-	Data       bitlyData `json:"data"`
-}
-
-type bitlyData struct {
-	LongURL    string `json:"long_url"`
-	URL        string `json:"url"`
-	NewHash    int    `json:"new_hash"`
-	Hash       string `json:"hash"`
-	GlobalHash string `json:"global_hash"`
+type notFound struct {
+	Found bool `json:"found"`
 }
 
 func getopt(name, dfault string) string {
@@ -88,135 +52,85 @@ func assert(err error) {
 	}
 }
 
+func hashType(hash string) *grequests.RequestOptions {
+	if match, _ := regexp.MatchString("([a-fA-F0-9]{32})", hash); match {
+		return &grequests.RequestOptions{
+			Params: map[string]string{
+				"md5": hash,
+			},
+		}
+	} else if match, _ := regexp.MatchString("([a-fA-F0-9]{40})", hash); match {
+		return &grequests.RequestOptions{
+			Params: map[string]string{
+				"sha1": hash,
+			},
+		}
+	} else if match, _ := regexp.MatchString("([a-fA-F0-9]{64})", hash); match {
+		return &grequests.RequestOptions{
+			Params: map[string]string{
+				"sha256": hash,
+			},
+		}
+	} else if match, _ := regexp.MatchString("([a-fA-F0-9]{128})", hash); match {
+		return &grequests.RequestOptions{
+			Params: map[string]string{
+				"sha512": hash,
+			},
+		}
+	} else {
+		return &grequests.RequestOptions{ //, fmt.Errorf("%s is not a valid hash", hash)
+		}
+	}
+}
+
+func parseLookupHashOutput(lookupout []string) ResultsData {
+
+	lookup := ResultsData{Found: false}
+
+	if len(lookupout) > 0 {
+		fields := strings.Fields(lookupout[0])
+
+		if len(fields) > 0 {
+			lookup.Detection = fields[0]
+			lookup.LastSeen = fields[1]
+		} else {
+			log.Fatal(fmt.Errorf("Unable to parse LookupHashOutput: %#v\n", lookupout))
+		}
+	}
+
+	return lookup
+}
+
+// LookupHash retreieves the TeamCymru - Malware Hash Registry for the given hash
+func LookupHash(hash string) ResultsData {
+
+	answers, _ := net.LookupTXT(hash + ".malware.hash.cymru.com")
+	// fmt.Printf("answers: %#v\n", answers)
+	// fmt.Printf("err: %#v\n", err)
+
+	tcResult := parseLookupHashOutput(answers)
+	// fmt.Printf("%#v", tcResult)
+	return tcResult
+}
+
 func printStatus(resp gorequest.Response, body string, errs []error) {
 	fmt.Println(resp.Status)
 }
 
-func printMarkDownTable(virustotal virustotal) {
-	fmt.Println("#### virustotal")
-	table := clitable.New([]string{"Ratio", "Link", "API", "Scanned"})
-	table.AddRow(map[string]interface{}{
-		"Ratio": getRatio(virustotal.Results.Positives, virustotal.Results.Total),
-		"Link":  fmt.Sprintf("[link](%s)", virustotal.Results.Permalink),
-		"API":   "Public",
-		// "API":     virustotal.ApiType,
-		"Scanned": time.Now().Format("Mon 2006Jan02 15:04:05"),
-	})
-	table.Markdown = true
-	table.Print()
-}
-
-// scanFile uploads file to virustotal
-func scanFile(path string, apikey string) string {
-	// fmt.Println("Uploading file to virustotal...")
-	fd, err := grequests.FileUploadFromDisk(path)
-
-	if err != nil {
-		log.Println("Unable to open file: ", err)
-	}
-
-	// This will upload the file as a multipart mime request
-	resp, err := grequests.Post("https://www.virustotal.com/vtapi/v2/file/scan",
-		&grequests.RequestOptions{
-			Files: fd,
-			Params: map[string]string{
-				"apikey": apikey,
-				// "notify_url": notify_url,
-				// "notify_changes_only": bool,
-			},
+func printMarkDownTable(ss TeamCymru) {
+	fmt.Println("#### TeamCymru")
+	if ss.Results.Found {
+		table := clitable.New([]string{"Found", "Detection", "LastSeen"})
+		table.AddRow(map[string]interface{}{
+			"Found":     ss.Results.Found,
+			"Detection": ss.Results.Detection,
+			"LastSeen":  ss.Results.LastSeen,
 		})
-
-	if err != nil {
-		log.Println("Unable to make request", resp.Error)
+		table.Markdown = true
+		table.Print()
+	} else {
+		fmt.Println(" - Not found")
 	}
-
-	if resp.Ok != true {
-		log.Println("Request did not return OK")
-	}
-
-	fmt.Println(resp.String())
-
-	var scanResults ScanResults
-	resp.JSON(&scanResults)
-	// fmt.Printf("%#v", scanResults)
-
-	// TODO: wait for an hour!?!?!? or create a notify URL endpoint?!?!?!
-	ro := &grequests.RequestOptions{
-		Params: map[string]string{
-			"resource": scanResults.Sha256,
-			"scan_id":  scanResults.ScanID,
-			"apikey":   apikey,
-			"allinfo":  "1",
-		},
-	}
-	resp, err = grequests.Get("https://www.virustotal.com/vtapi/v2/file/report", ro)
-
-	if err != nil {
-		log.Fatalln("Unable to make request: ", err)
-	}
-
-	if resp.Ok != true {
-		log.Println("Request did not return OK")
-	}
-
-	// fmt.Println(resp.String())
-	return resp.String()
-}
-
-// lookupHash retreieves the virustotal file report for the given hash
-func lookupHash(hash string, apikey string) ResultsData {
-	// NOTE: https://godoc.org/github.com/levigross/grequests
-	// fmt.Println("Getting virustotal report...")
-	ro := &grequests.RequestOptions{
-		Params: map[string]string{
-			"resource": hash,
-			"apikey":   apikey,
-			"allinfo":  "1",
-		},
-	}
-	resp, err := grequests.Get("https://www.virustotal.com/vtapi/v2/file/report", ro)
-
-	if err != nil {
-		log.Fatalln("Unable to make request: ", err)
-	}
-
-	if resp.Ok != true {
-		log.Println("Request did not return OK")
-	}
-	var vtResult ResultsData
-	// fmt.Println(resp.String())
-	// return resp.String()
-	resp.JSON(&vtResult)
-	// fmt.Printf("%#v", vtResult)
-	return vtResult
-}
-
-func getRatio(positives int, total int) string {
-	ratio := 100.0 * float64(positives) / float64(total)
-	return fmt.Sprintf("%.f%%", ratio)
-}
-
-func shortenPermalink(longURL string) string {
-	// NOTE: http://dev.bitly.com/api.html
-	// https://github.com/bitly/go-simplejson
-	var btl bitly
-
-	ro := &grequests.RequestOptions{
-		Params: map[string]string{
-			"access_token": "23382325dd472aed14518ec5b8c8f4c2293e114a",
-			"longUrl":      longURL,
-		},
-	}
-	resp, err := grequests.Get("https://api-ssl.bitly.com/v3/shorten", ro)
-
-	if err != nil {
-		log.Fatalln("Unable to make request: ", err)
-	}
-
-	fmt.Println(resp.String())
-	resp.JSON(&btl)
-
-	return btl.Data.URL
 }
 
 var appHelpTemplate = `Usage: {{.Name}} {{if .Flags}}[OPTIONS] {{end}}COMMAND [arg...]
@@ -241,13 +155,12 @@ Run '{{.Name}} COMMAND --help' for more information on a command.
 func main() {
 	cli.AppHelpTemplate = appHelpTemplate
 	app := cli.NewApp()
-	app.Name = "virustotal"
+	app.Name = "team-cymru"
 	app.Author = "blacktop"
 	app.Email = "https://github.com/blacktop"
 	app.Version = Version + ", BuildTime: " + BuildTime
 	app.Compiled, _ = time.Parse("20060102", BuildTime)
-	app.Usage = "Malice VirusTotal Plugin"
-	var apikey string
+	app.Usage = "Malice TeamCymru - Malware Hash Registry Plugin"
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
 			Name:   "post, p",
@@ -259,76 +172,26 @@ func main() {
 			Usage:  "proxy settings for Malice webhook endpoint",
 			EnvVar: "MALICE_PROXY",
 		},
-		cli.StringFlag{
-			Name:        "api",
-			Value:       "",
-			Usage:       "VirusTotal API key",
-			EnvVar:      "MALICE_VT_API",
-			Destination: &apikey,
+		cli.BoolFlag{
+			Name:  "table, t",
+			Usage: "output as Markdown table",
 		},
 	}
-	app.Commands = []cli.Command{
-		{
-			Name:      "scan",
-			Aliases:   []string{"s"},
-			Usage:     "Upload binary to VirusTotal for scanning",
-			ArgsUsage: "FILE to upload to VirusTotal",
-			Flags: []cli.Flag{
-				cli.BoolFlag{
-					Name:  "table, t",
-					Usage: "output as Markdown table",
-				},
-			},
-			Action: func(c *cli.Context) {
-				// Check for valid apikey
-				if apikey == "" {
-					log.Fatal(fmt.Errorf("Please supply a valid VT_API key with the flag '--api'."))
-				}
-
-				if c.Args().Present() {
-					path := c.Args().First()
-					// Check that file exists
-					if _, err := os.Stat(path); os.IsNotExist(err) {
-						assert(err)
-					}
-					scanFile(path, apikey)
-				} else {
-					log.Fatal(fmt.Errorf("Please supply a file to upload to VirusTotal."))
-				}
-			},
-		},
-		{
-			Name:      "lookup",
-			Aliases:   []string{"l"},
-			Usage:     "Get file hash scan report",
-			ArgsUsage: "MD5/SHA1/SHA256 hash of file",
-			Flags: []cli.Flag{
-				cli.BoolFlag{
-					Name:  "table, t",
-					Usage: "output as Markdown table",
-				},
-			},
-			Action: func(c *cli.Context) {
-				// Check for valid apikey
-				if apikey == "" {
-					log.Fatal(fmt.Errorf("Please supply a valid VT_API key with the flag '--api'."))
-				}
-
-				if c.Args().Present() {
-					vtReport := lookupHash(c.Args().First(), apikey)
-					vt := virustotal{Results: vtReport}
-					if c.Bool("table") {
-						printMarkDownTable(vt)
-					} else {
-						vtJSON, err := json.Marshal(vt)
-						assert(err)
-						fmt.Println(string(vtJSON))
-					}
-				} else {
-					log.Fatal(fmt.Errorf("Please supply a MD5/SHA1/SHA256 hash to query."))
-				}
-			},
-		},
+	app.ArgsUsage = "MD5/SHA1 hash of file"
+	app.Action = func(c *cli.Context) {
+		if c.Args().Present() {
+			ssReport := LookupHash(c.Args().First())
+			ss := TeamCymru{Results: ssReport}
+			if c.Bool("table") {
+				printMarkDownTable(ss)
+			} else {
+				ssJSON, err := json.Marshal(ss)
+				assert(err)
+				fmt.Println(string(ssJSON))
+			}
+		} else {
+			log.Fatal(fmt.Errorf("Please supply a MD5/SHA1 hash to query."))
+		}
 	}
 
 	err := app.Run(os.Args)

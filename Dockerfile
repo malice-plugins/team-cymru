@@ -1,4 +1,4 @@
-FROM gliderlabs/alpine:3.3
+FROM gliderlabs/alpine
 
 MAINTAINER blacktop, https://github.com/blacktop
 
@@ -13,8 +13,6 @@ RUN apk-install -t build-deps go git mercurial \
   && go build -ldflags "-X main.Version=$(cat VERSION) -X main.BuildTime=$(date -u +%Y%m%d)" -o /bin/team-cymru \
   && rm -rf /go \
   && apk del --purge build-deps
-
-WORKDIR /malware
 
 ENTRYPOINT ["/bin/team-cymru"]
 

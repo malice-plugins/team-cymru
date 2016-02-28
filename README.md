@@ -7,15 +7,15 @@
 [![Image Size](https://img.shields.io/imagelayers/image-size/malice/teamcymru/latest.svg)](https://imagelayers.io/?images=malice/teamcymru:latest)
 [![Image Layers](https://img.shields.io/imagelayers/layers/malice/teamcymru/latest.svg)](https://imagelayers.io/?images=malice/teamcymru:latest)
 
-Malice TeamCymru Hash Lookup Plugin
+Malice TeamCymru - Malware Hash Registry Plugin
 
-This repository contains a **Dockerfile** of **malice/team-cymru** for [Docker](https://www.docker.io/)'s [trusted build](https://index.docker.io/u/malice/teamcymru/) published to the public [DockerHub](https://index.docker.io/).
+This repository contains a **Dockerfile** of TeamCymru's [Malware Hash Registry](http://www.team-cymru.org/MHR.html) for [Docker](https://www.docker.io/)'s [trusted build][hub] published to the public [DockerHub](https://hub.docker.com).
 
-> **WARNING:** Work in progress.  Not ready yet.
+> **WARNING:** TeamCymru - Malware Hash Registry doesn't seem to be working on their end.  Please contact them and ask to get it back up and running
 
 ### Dependencies
 
-* [gliderlabs/alpine:3.3](https://index.docker.io/_/gliderlabs/alpine/)
+* [gliderlabs/alpine](https://index.docker.io/_/gliderlabs/alpine/)
 
 
 ### Installation
@@ -30,22 +30,22 @@ This repository contains a **Dockerfile** of **malice/team-cymru** for [Docker](
 ```bash
 Usage: team-cymru [OPTIONS] COMMAND [arg...]
 
-Malice TeamCymru Hash Lookup Plugin
+Malice TeamCymru - Malware Hash Registry Plugin
 
-Version: v0.1.0, BuildTime: 20160214
+Version: v0.1.0, BuildTime: 20160228
 
 Author:
   blacktop - <https://github.com/blacktop>
 
 Options:
-  --table, -t	output as Markdown table
   --post, -p	POST results to Malice webhook [$MALICE_ENDPOINT]
   --proxy, -x	proxy settings for Malice webhook endpoint [$MALICE_PROXY]
+  --table, -t	output as Markdown table
   --help, -h	show help
   --version, -v	print the version
 
 Commands:
-  help		Shows a list of commands or help for one command
+  help	Shows a list of commands or help for one command
 
 Run 'team-cymru COMMAND --help' for more information on a command.
 ```
