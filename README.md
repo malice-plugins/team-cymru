@@ -1,5 +1,5 @@
 ![TC logo](https://raw.githubusercontent.com/maliceio/malice-team-cymru/master/logo.png)
-# malice-team-cymru
+# team-cymru
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
 [![Docker Stars](https://img.shields.io/docker/stars/malice/team-cymru.svg)][hub]
