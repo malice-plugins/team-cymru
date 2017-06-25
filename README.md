@@ -1,5 +1,5 @@
 ![TC logo](https://raw.githubusercontent.com/maliceio/malice-team-cymru/master/logo.png)
-# team-cymru [DEPRICATED] due to the service not working anymore :cry:
+# team-cymru [Deprecated] due to the service not working anymore :cry:
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
 [![Docker Stars](https://img.shields.io/docker/stars/malice/team-cymru.svg)][hub]
