@@ -92,9 +92,10 @@ func parseLookupHashOutput(lookupout []string) ResultsData {
 		fields := strings.Fields(lookupout[0])
 
 		if len(fields) > 0 {
-			lookup.Detection = fields[0]
-			s, _ := strconv.ParseInt(fields[1], 10, 64)
+			lookup.Detection = fields[1]
+			s, _ := strconv.ParseInt(fields[0], 10, 64)
 			lookup.LastSeen = string(time.Unix(s, 0).Format("20060102"))
+			lookup.Found = true
 		} else {
 			log.Fatal(fmt.Errorf("Unable to parse LookupHashOutput: %#v\n", lookupout))
 		}
