@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/codegangsta/cli"
 	"github.com/crackcomm/go-clitable"
 	"github.com/levigross/grequests"
 	"github.com/parnurzeal/gorequest"
+	"github.com/urfave/cli"
 )
 
 // Version stores the plugin's version
@@ -90,13 +90,14 @@ func parseLookupHashOutput(lookupout []string) ResultsData {
 
 	if len(lookupout) > 0 {
 		fields := strings.Fields(lookupout[0])
-
+		fmt.Println(fields)
 		if len(fields) > 0 {
-			lookup.Detection = fields[0]
-			s, _ := strconv.ParseInt(fields[1], 10, 64)
-			lookup.LastSeen = string(time.Unix(s, 0).Format("20060102"))
+			lookup.Detection = fields[1] + "%"
+			s, _ := strconv.ParseInt(fields[0], 10, 64)
+			lookup.LastSeen = time.Unix(s, 0).Format(time.DateOnly)
+			lookup.Found = true
 		} else {
-			log.Fatal(fmt.Errorf("Unable to parse LookupHashOutput: %#v\n", lookupout))
+			log.Fatal(fmt.Errorf("unable to parse LookupHashOutput: %#v", lookupout))
 		}
 	}
 
@@ -192,7 +193,7 @@ func main() {
 				fmt.Println(string(ssJSON))
 			}
 		} else {
-			log.Fatal(fmt.Errorf("Please supply a MD5/SHA1 hash to query."))
+			log.Fatal(fmt.Errorf("please supply a MD5/SHA1 hash to query"))
 		}
 	}
 

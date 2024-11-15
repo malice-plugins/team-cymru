@@ -1,17 +1,18 @@
-![TC logo](https://raw.githubusercontent.com/maliceio/malice-team-cymru/master/logo.png)
-# team-cymru [Deprecated] due to the service not working anymore :cry:
-
-[![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
-[![Docker Stars](https://img.shields.io/docker/stars/malice/team-cymru.svg)][hub]
-[![Docker Pulls](https://img.shields.io/docker/pulls/malice/team-cymru.svg)][hub]
-[![Image Size](https://img.shields.io/imagelayers/image-size/malice/team-cymru/latest.svg)](https://imagelayers.io/?images=malice/team-cymru:latest)
-[![Image Layers](https://img.shields.io/imagelayers/layers/malice/team-cymru/latest.svg)](https://imagelayers.io/?images=malice/team-cymru:latest)
-
-Malice TeamCymru - Malware Hash Registry Plugin
+<p align="center">
+  <a href="https://github.com/blacktop/ipsw"><img alt="IPSW Logo" src="https://raw.githubusercontent.com/maliceio/malice-team-cymru/master/logo.png" height="75" /></a>
+  <h1 align="center">team-cymru</h1>
+  <h4><p align="center">Malice TeamCymru - Malware Hash Registry Plugin</p></h4>
+  <p align="center">
+    <a href="https://hub.docker.com/r/malice/team-cymrus" alt="DockerHUB">
+          <img src="hhttps://img.shields.io/docker/stars/malice/team-cymru.svg" /></a>
+    <a href="https://hub.docker.com/r/malice/team-cymrus" alt="DockerHUB">
+          <img src="https://img.shields.io/docker/pulls/malice/team-cymru.svg" /></a>
+    <a href="http://doge.mit-license.org" alt="LICENSE">
+          <img src="https://img.shields.io/:license-mit-blue.svg" /></a>
+</p>
+<br>
 
 This repository contains a **Dockerfile** of TeamCymru's [Malware Hash Registry](http://www.team-cymru.org/MHR.html) for [Docker](https://www.docker.io/)'s [trusted build][hub] published to the public [DockerHub](https://hub.docker.com).
-
-> **WARNING:** TeamCymru - Malware Hash Registry doesn't seem to be working on their end.  Please contact them and ask to get it back up and running
 
 ### Dependencies
 
@@ -65,9 +66,9 @@ This will output to stdout and POST to malice results API webhook endpoint.
 ### Sample Output STDOUT (Markdown Table):
 ---
 #### TeamCymru
-| Detection   | LastSeen |
-| ----------- | -------- |
-| 85%         | 20091112 |
+| Detection | LastSeen |
+| --------- | -------- |
+| 85%       | 20091112 |
 ---
 ### To Run on OSX
  - Install [Homebrew](http://brew.sh)
