@@ -4,7 +4,7 @@
   <h4><p align="center">Malice TeamCymru - Malware Hash Registry Plugin</p></h4>
   <p align="center">
     <a href="https://hub.docker.com/r/malice/team-cymrus" alt="DockerHUB">
-          <img src="hhttps://img.shields.io/docker/stars/malice/team-cymru.svg" /></a>
+          <img src="https://img.shields.io/docker/stars/malice/team-cymru.svg" /></a>
     <a href="https://hub.docker.com/r/malice/team-cymrus" alt="DockerHUB">
           <img src="https://img.shields.io/docker/pulls/malice/team-cymru.svg" /></a>
     <a href="http://doge.mit-license.org" alt="LICENSE">
