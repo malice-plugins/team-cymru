@@ -90,7 +90,6 @@ func parseLookupHashOutput(lookupout []string) ResultsData {
 
 	if len(lookupout) > 0 {
 		fields := strings.Fields(lookupout[0])
-		fmt.Println(fields)
 		if len(fields) > 0 {
 			lookup.Detection = fields[1] + "%"
 			s, _ := strconv.ParseInt(fields[0], 10, 64)
